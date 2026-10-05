@@ -21,7 +21,7 @@ jobs:
     env:
       DATABASE_URL: host=localhost user=realworld password=realworld dbname=realworld
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install libpq and OpenSSL headers
         run: sudo apt-get update && sudo apt-get install -y libpq-dev libssl-dev pkg-config
