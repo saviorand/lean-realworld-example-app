@@ -3,7 +3,7 @@
 [RealWorld](https://github.com/realworld-apps/realworld) in Lean 4, on both ends: the Medium-style blogging app (users, profiles, articles, comments, tags, favourites, follows) that has been implemented in over a hundred stacks.
 
 - **The API** (`/api/...`) passes the official Hurl suite, 154 requests in 13 files.
-- **The site** (everything else) is the Conduit frontend, rendered on the server with typed HTML and made interactive with [Datastar](https://data-star.dev): forms, favourites, follows and comments update in place over server-sent events, with no frontend build step. It calls the same service layer as the API, so every rule is written once.
+- **The site** (everything else) is the Conduit frontend, rendered on the server with typed HTML and made interactive with [Datastar](https://data-star.dev): forms, favourites, follows and comments update in place over server-sent events, with no frontend build step. It calls the same service layer as the API, so every rule is written once. It passes the official Playwright suite in its mode for apps that own both ends: 73 of the 74 tests that mode runs. The 74th is left out because its selector finds two sign-in links on a signed-out article page, where the reference frontends have the same two ([`e2e/playwright.config.ts`](e2e/playwright.config.ts)).
 
 ## Stack
 
@@ -65,10 +65,11 @@ The binary, `.lake/build/bin/realworld`, loads one library of its own at runtime
 ```
 lake test                      # unit tests
 scripts/run-api-tests.sh       # the RealWorld API suite, against a fresh build
-cd e2e && node flow.js         # the site in Chromium, against a running server
+scripts/run-frontend-tests.sh  # the RealWorld frontend suite, likewise, on an empty database
+cd e2e && node flow.js         # a walk through the site, against a running server
 ```
 
-CI runs the unit tests and the API suite on every push, and checks that no proof rests on an axiom beyond Lean's standard three. The API suite needs Hurl 5 or newer and a checkout of [realworld-apps/realworld](https://github.com/realworld-apps/realworld) beside this repository (or `REALWORLD=/path/to/it`). The browser walk-through needs Node and Playwright (`npm install && npx playwright install chromium` in `e2e/`).
+CI runs all but the walk-through on every push, and checks that no proof rests on an axiom beyond Lean's standard three. Both suites need a checkout of [realworld-apps/realworld](https://github.com/realworld-apps/realworld) beside this repository (or `REALWORLD=/path/to/it`). The API suite needs Hurl 5 or newer; the frontend suite and the walk-through need Node and Playwright (`npm ci && npx playwright install chromium` in `e2e/`). The frontend suite wants a database with no articles, because its tests look for the tags they create among the popular ones: `DATABASE_URL=dbname=fresh scripts/run-frontend-tests.sh` after `createdb fresh`.
 
 ## Layout
 

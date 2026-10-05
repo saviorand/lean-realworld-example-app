@@ -32,9 +32,23 @@ jobs:
         with:
           axiom-audit: true
 
+      - name: Check out the RealWorld specs
+        run: git clone --depth 1 https://github.com/realworld-apps/realworld ../realworld
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Playwright
+        working-directory: e2e
+        run: npm ci && npx playwright install --with-deps chromium
+
+      # First, while the database has no articles: the tests look for the tags they create among
+      # the popular ones.
+      - name: Run the RealWorld frontend suite
+        run: scripts/run-frontend-tests.sh
+
       - name: Run the RealWorld API suite
         run: |
-          git clone --depth 1 https://github.com/realworld-apps/realworld ../realworld
           curl -sSL -o /tmp/hurl.tar.gz https://github.com/Orange-OpenSource/hurl/releases/download/8.0.1/hurl-8.0.1-x86_64-unknown-linux-gnu.tar.gz
           tar xzf /tmp/hurl.tar.gz -C /tmp
           HURL=/tmp/hurl-8.0.1-x86_64-unknown-linux-gnu/bin/hurl scripts/run-api-tests.sh
