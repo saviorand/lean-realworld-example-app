@@ -1,0 +1,83 @@
+name = "realworld"
+version = "0.1.0"
+defaultTargets = ["realworld", "tests"]
+testDriver = "tests"
+
+[leanOptions]
+warningAsError = true
+
+# Every library is required at the `lean-realworld` branch of a fork, which holds its move to Lean
+# 4.34.1 and the changes this application needed, until those are released upstream. The README
+# lists the pull requests. Lake resolves these from the last up, and a package found first is kept,
+# so the libraries others depend on come last: that way the versions here replace the older ones
+# the libraries pin of each other.
+
+[[require]]
+name = "routing"
+git = "https://github.com/saviorand/lean-routing"
+rev = "lean-realworld"
+
+[[require]]
+name = "middleware"
+git = "https://github.com/saviorand/lean-middleware"
+rev = "lean-realworld"
+
+[[require]]
+name = "leanmigratePostgres"
+git = "https://github.com/saviorand/leanmigrate"
+rev = "lean-realworld"
+subDir = "postgres"
+
+[[require]]
+name = "jose"
+git = "https://github.com/saviorand/lean-jose"
+rev = "lean-realworld"
+
+[[require]]
+name = "libcrypto"
+git = "https://github.com/saviorand/lean-libcrypto"
+rev = "lean-realworld"
+
+[[require]]
+name = "markdown"
+git = "https://github.com/saviorand/lean-markdown"
+rev = "lean-realworld"
+
+[[require]]
+name = "datastar"
+git = "https://github.com/saviorand/datastar-lean-modules"
+rev = "lean-realworld"
+
+[[require]]
+name = "leanpostgres"
+git = "https://github.com/saviorand/leanpostgres"
+rev = "lean-realworld"
+
+[[require]]
+name = "json"
+git = "https://github.com/saviorand/lean-json"
+rev = "lean-realworld"
+
+[[require]]
+name = "leancrypto"
+git = "https://github.com/saviorand/leancrypto"
+rev = "lean-realworld"
+
+[[require]]
+name = "html"
+git = "https://github.com/saviorand/lean-html"
+rev = "lean-realworld"
+
+[[lean_lib]]
+name = "RealWorld"
+
+[[lean_exe]]
+name = "realworld"
+root = "Main"
+
+[[lean_lib]]
+name = "RealWorldTests"
+
+[[lean_exe]]
+name = "tests"
+root = "RealWorldTests"
