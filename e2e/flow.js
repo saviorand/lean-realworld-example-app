@@ -39,7 +39,10 @@ async function expectText(page, sel, text) {
   await alice.fill('input[name=title]', `Lean on both ends ${uid}`);
   await alice.fill('input[name=description]', 'A RealWorld app served by Lean');
   await alice.fill('textarea[name=body]', '## Why\n\nBecause *types*.\n\n- server in Lean\n- pages in Lean\n\n<script>alert(1)</script>');
-  await alice.fill('input[name=tags]', `lean, datastar_${uid}`);
+  for (const tag of ['lean', `datastar_${uid}`]) {
+    await alice.fill('input[placeholder="Enter tags"]', tag);
+    await alice.press('input[placeholder="Enter tags"]', 'Enter');
+  }
   await alice.click('button:has-text("Publish Article")');
   await alice.waitForURL(/\/article\//);
   const slug = alice.url().split('/article/')[1];

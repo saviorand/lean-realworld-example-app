@@ -16,6 +16,7 @@ route_table Site
     logout := "/logout",
     editor := "/editor",
     editArticle := "/editor/:slug:String",
+    tagPills := "/tag-pills",
     article := "/article/:slug:String",
     favorite := "/article/:slug:String/favorite",
     comments := "/article/:slug:String/comments",

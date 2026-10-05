@@ -66,8 +66,10 @@ private def showFeed (env : Env) (req : Request Body.Stream) (me : Option Db.Use
 
 def home (env : Env) : Handler := fun req => do
   let me ← viewer env req
-  let feed := if param req "feed" == some "following" && me.isSome then .following else .global
-  showFeed env req me feed
+  match param req "feed", me with
+  | some "following", none => redirectTo Site.links.login
+  | some "following", some _ => showFeed env req me .following
+  | _, _ => showFeed env req me .global
 
 def tag (env : Env) (name : String) : Handler := fun req => do
   showFeed env req (← viewer env req) (.tag name)
@@ -186,19 +188,17 @@ def settingsAction (env : Env) : Handler := action env fun me signals => do
   | .ok user => respond [redirect (Site.links.profile user.username)]
   | .error e => showErrors "errors" e
 
-/-- Tags are typed into one field, separated by commas or spaces. -/
-def splitTags (s : String) : Array String :=
-  ((s.map fun c => if c == ',' || c.isWhitespace then ' ' else c).splitOn " ").filter (· ≠ "") |>.toArray
-
-/-- The editor's signals as the API's article body. -/
+/-- The editor's signals as the API's article body, whose `article` the `article` signal is. -/
 def articleBody (signals : Json) : Json :=
-  let fields := match signals.get? [.field "article"] with
-    | some (.obj fields) => fields.filter fun (field : String × Json) => field.1 != "tagList"
+  .obj #[("article", (signals.get? [.field "article"]).getD (.obj #[]))]
+
+/-- The editor's tag pills, for the `article.tagList` the browser holds, normalised as the API
+will normalise them. -/
+def tagPillsAction : Handler := guestAction fun signals => do
+  let tags := match signals.get? [.field "article", .field "tagList"] with
+    | some (.arr items) => normaliseTags (items.filterMap fun | .str s => some s | _ => none)
     | _ => #[]
-  let tags := match signals.get? [.field "tags"] with
-    | some (.str s) => splitTags s
-    | _ => #[]
-  .obj #[("article", .obj (fields.push ("tagList", .arr (tags.map .str))))]
+  respond [patch (Views.tagPills tags)]
 
 def createAction (env : Env) : Handler := action env fun me signals => do
   match ← (Service.createArticle env me (articleBody signals)).run with
@@ -269,6 +269,7 @@ def routes (env : Env) : List (Route Result) :=
     .post patterns.editor (createAction env),
     .get patterns.editArticle (editArticlePage env),
     .post patterns.editArticle (updateAction env),
+    .get patterns.tagPills tagPillsAction,
     .get patterns.article (articlePage env),
     .delete patterns.article (deleteArticleAction env),
     .post patterns.favorite (favoriteAction env true),

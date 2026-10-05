@@ -195,9 +195,12 @@ def pagination (count : Nat) (current : Nat) (base : String) : Node .flow :=
           { class_ := if n + 1 == current then "page-item active" else "page-item" })
       { class_ := "pagination" }
 
-def articleList (rows : Array Db.ArticleRow) (count : Nat) (current : Nat) (base : String) :
-    List (Node .flow) :=
-  if rows.isEmpty then [ div [ "No articles are here... yet." ] { class_ := "article-preview empty-feed-message" } ]
+def noArticles : Node .flow :=
+  div [ "No articles are here... yet." ] { class_ := "article-preview empty-feed-message" }
+
+def articleList (rows : Array Db.ArticleRow) (count : Nat) (current : Nat) (base : String)
+    (empty := noArticles) : List (Node .flow) :=
+  if rows.isEmpty then [empty]
   else rows.toList.map preview ++ [pagination count current base]
 
 /-! ## Pages -/
@@ -216,6 +219,11 @@ def homePage (viewer : Option Db.UserRow) (feed : Feed) (rows : Array Db.Article
     ++ (match feed with
         | .tag name => [tab true (Site.links.tag name) [ i [] { class_ := "ion-pound" }, s!" {name}" ]]
         | _ => [])
+  let empty := if feed == .following then
+      div [ "Your feed is empty. Follow some authors, or browse the ",
+            a { href := Site.links.home } [ "Global Feed" ], "." ]
+        { class_ := "article-preview empty-feed-message" }
+    else noArticles
   let base := match feed with
     | .global => s!"{Site.links.home}?"
     | .following => s!"{Site.links.home}?feed=following&"
@@ -227,7 +235,7 @@ def homePage (viewer : Option Db.UserRow) (feed : Feed) (rows : Array Db.Article
       div [
         div [
           div ([div [ ul tabs { class_ := "nav nav-pills outline-active" } ] { class_ := "feed-toggle" }]
-                ++ articleList rows count current base) { class_ := "col-md-9" },
+                ++ articleList rows count current base empty) { class_ := "col-md-9" },
           div [
             div [
               p [ "Popular Tags" ],
@@ -305,13 +313,36 @@ def settingsPage (me : Db.UserRow) : String :=
     ] { class_ := "settings-page" }
   ]
 
+/-- The editor's tags, one pill each; a pill's cross removes it. -/
+def tagPills (tags : Array String) : Node .flow :=
+  div (tags.toList.map fun t =>
+      span [ i [] { class_ := "ion-close-round" } [("data-tag", t)], s!" {t}" ] { class_ := "tag-default tag-pill" })
+    { class_ := "tag-list", id := "tag-pills" }
+
+/-- Tags are entered one at a time: Enter turns what is typed into a pill, and a pill's cross
+removes it. The tags are the `article.tagList` signal, changed in the browser, so the form sends
+the array the API takes; the server only renders the pills. Both handlers are on the fieldset, so
+their requests come from one element, where Datastar cancels a request still in flight when the
+next starts, and the pills shown are those of the latest list. -/
+def tagField (tags : Array String) : Node .flow :=
+  let render := action "get" Site.links.tagPills
+  fieldset [ (textInput "tagInput" "Enter tags" "tags" (large := false)).toFlow, tagPills tags ]
+    { class_ := "form-group" }
+    [("data-on:keydown", "evt.key === 'Enter' && (evt.preventDefault(), $tagInput.trim() && " ++
+        "!$article.tagList.includes($tagInput.trim()) && " ++
+        s!"($article.tagList = [...$article.tagList, $tagInput.trim()]), $tagInput = '', {render})"),
+     onClick ("evt.target.dataset.tag !== undefined && ($article.tagList = " ++
+        s!"$article.tagList.filter(t => t !== evt.target.dataset.tag), {render})")]
+
 def editorPage (me : Db.UserRow) (existing : Option Db.ArticleRow) : String :=
+  let tags := (existing.map (·.tagList)).getD #[]
   let initial : Json := .obj #[
     ("article", .obj #[
       ("title", .str ((existing.map (·.title)).getD "")),
       ("description", .str ((existing.map (·.description)).getD "")),
-      ("body", .str ((existing.map (·.body)).getD ""))]),
-    ("tags", .str ((existing.map fun art => " ".intercalate art.tagList.toList).getD ""))]
+      ("body", .str ((existing.map (·.body)).getD "")),
+      ("tagList", .arr (tags.map .str))]),
+    ("tagInput", .str "")]
   let submit := action "post" (match existing with
     | some art => Site.links.editArticle art.slug
     | none => Site.links.editor)
@@ -327,7 +358,7 @@ def editorPage (me : Db.UserRow) (existing : Option Db.ArticleRow) : String :=
                 field (textInput "article.description" "What's this article about?" "description" (large := false)),
                 field (textarea "" { name := "body", placeholder := "Write your article (in markdown)", rows := "8",
                                      class_ := "form-control" } [("data-bind", "article.body")]),
-                field (textInput "tags" "Enter tags" "tags" (large := false)),
+                tagField tags,
                 button [ "Publish Article" ] { class_ := "btn btn-lg pull-xs-right btn-primary" }
               ]
             ] {} [signals initial, onSubmit submit]
@@ -346,7 +377,7 @@ def articleMeta (viewer : Option Db.UserRow) (art : Db.ArticleRow) (place : Plac
         (s!"{nbsp}" : Node .flow),
         button [ i [] { class_ := "ion-trash-a" }, " Delete Article" ]
           { type := "button", class_ := "btn btn-sm btn-outline-danger" }
-          [onClick s!"confirm('Delete this article?') && {action "delete" (Site.links.article art.slug)}"] ]
+          [onClick (action "delete" (Site.links.article art.slug))] ]
     else
       [ (followButton art.authorUsername art.following place).toFlow, (s!"{nbsp}{nbsp}" : Node .flow),
         (favoriteButton art place).toFlow ]
