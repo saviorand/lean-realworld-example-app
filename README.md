@@ -45,11 +45,12 @@ Needs [elan](https://github.com/leanprover/elan), PostgreSQL, and the `libpq` an
 
 ```
 createdb realworld
-lake build
-DATABASE_URL="dbname=realworld" JWT_SECRET="at-least-32-bytes-of-secret......" ./.lake/build/bin/realworld
+DATABASE_URL="dbname=realworld" JWT_SECRET="at-least-32-bytes-of-secret......" lake exe realworld
 ```
 
 Open <http://127.0.0.1:8000>. The server applies migrations at startup and serves `public/` (the shared Conduit stylesheet and the default avatar) from the working directory.
+
+The binary, `.lake/build/bin/realworld`, loads one library of its own at runtime: lean-libcrypto's OpenSSL shim, `libcrypto_shim.so` (`.dylib` on macOS), in `.lake/packages/libcrypto/.lake/build/lib`. `lake exe` finds it; to run the binary anywhere else, put the shim on the loader's path, with `LD_LIBRARY_PATH` or in `/usr/lib`, along with `public/` and `migrations/` in the working directory.
 
 | Variable | Default | |
 |---|---|---|

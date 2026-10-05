@@ -13,6 +13,9 @@ export JWT_SECRET="${JWT_SECRET:-api-tests-secret-that-is-at-least-32-bytes}"
 export PORT
 
 lake build realworld
+# lean-libcrypto builds its OpenSSL shim as a shared library, which Linux has to be told where to
+# find; macOS records its path in the binary.
+export LD_LIBRARY_PATH="$PWD/.lake/packages/libcrypto/.lake/build/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 ./.lake/build/bin/realworld &
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null' EXIT
