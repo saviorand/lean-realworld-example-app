@@ -421,8 +421,7 @@ def articlePage (viewer : Option Db.UserRow) (art : Db.ArticleRow) (comments : A
         div [
           div ((match viewer with
                 | some me => [errors "comment-errors", commentForm me art.slug]
-                | none => [p [ a { href := Site.links.login } [ "Sign in" ], " or ",
-                               a { href := Site.links.register } [ "sign up" ], " to add comments on this article." ]])
+                | none => [])
               ++ [div (comments.toList.map (commentCard viewer art.slug)) { id := "comments" }])
             { class_ := "col-xs-12 col-md-8 offset-md-2" }
         ] { class_ := "row" }

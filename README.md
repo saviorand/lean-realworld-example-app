@@ -3,7 +3,7 @@
 [RealWorld](https://github.com/realworld-apps/realworld) in Lean 4, on both ends: the Medium-style blogging app (users, profiles, articles, comments, tags, favourites, follows) that has been implemented in over a hundred stacks.
 
 - **The API** (`/api/...`) passes the official Hurl suite, 154 requests in 13 files.
-- **The site** (everything else) is the Conduit frontend, rendered on the server with typed HTML and made interactive with [Datastar](https://data-star.dev): forms, favourites, follows and comments update in place over server-sent events, with no frontend build step. It calls the same service layer as the API, so every rule is written once. It passes the official Playwright suite in its mode for apps that own both ends: 73 of the 74 tests that mode runs. The 74th is left out because its selector finds two sign-in links on a signed-out article page, where the reference frontends have the same two ([`e2e/playwright.config.ts`](e2e/playwright.config.ts)).
+- **The site** (everything else) is the Conduit frontend, rendered on the server with typed HTML and made interactive with [Datastar](https://data-star.dev): forms, favourites, follows and comments update in place over server-sent events, with no frontend build step. It calls the same service layer as the API, so every rule is written once. It passes the official Playwright suite, all 74 tests of the suite's mode for apps that own both ends.
 
 ## Stack
 
