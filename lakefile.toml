@@ -6,16 +6,17 @@ testDriver = "tests"
 [leanOptions]
 warningAsError = true
 
-# Every library is required at the `lean-realworld` branch of a fork, which holds its move to Lean
-# 4.34.1 and the changes this application needed, until those are released upstream. The README
-# lists the pull requests. Lake resolves these from the last up, and a package found first is kept,
-# so the libraries others depend on come last: that way the versions here replace the older ones
-# the libraries pin of each other.
+# Libraries with a release on Lean 4.34.1 are required at that release. The others are required at
+# the `lean-realworld` branch of a fork, which holds their move to Lean 4.34.1 and the changes this
+# application needed, until those are released upstream. The README lists the pull requests. Lake
+# resolves these from the last up and keeps the first version it finds of a package, so the
+# libraries others depend on come last, and the versions here replace the older ones the libraries
+# pin of each other.
 
 [[require]]
 name = "routing"
-git = "https://github.com/saviorand/lean-routing"
-rev = "lean-realworld"
+git = "https://github.com/paulbutcher/lean-routing"
+rev = "v0.8.0"
 
 [[require]]
 name = "middleware"
@@ -40,8 +41,8 @@ rev = "lean-realworld"
 
 [[require]]
 name = "markdown"
-git = "https://github.com/saviorand/lean-markdown"
-rev = "lean-realworld"
+git = "https://github.com/paulbutcher/lean-markdown"
+rev = "v0.8.0"
 
 [[require]]
 name = "datastar"
@@ -65,8 +66,8 @@ rev = "lean-realworld"
 
 [[require]]
 name = "html"
-git = "https://github.com/saviorand/lean-html"
-rev = "lean-realworld"
+git = "https://github.com/paulbutcher/lean-html"
+rev = "v0.10.0"
 
 [[lean_lib]]
 name = "RealWorld"
