@@ -153,7 +153,7 @@ def UserUpdate.parse (body : Json) : Except ApiError UserUpdate := do
          bio := valueOf bio, image := valueOf image }
 
 /-- Tags in the order given, blank ones dropped and repeats kept only the first time. -/
-def normaliseTags (tags : Array String) : Array String :=
+def normalizeTags (tags : Array String) : Array String :=
   tags.foldl (init := #[]) fun acc t =>
     let t := t.trimAscii.toString
     if t.isEmpty || acc.contains t then acc else acc.push t
@@ -163,7 +163,7 @@ def tagList : Field Json → Except String (Option (Array String))
   | .null => .error "must be an array of strings"
   | .value (.arr items) =>
     match items.mapM (fun | .str s => some s | _ => none) with
-    | some tags => .ok (some (normaliseTags tags))
+    | some tags => .ok (some (normalizeTags tags))
     | none => .error "must be an array of strings"
   | .value _ => .error "must be an array of strings"
 

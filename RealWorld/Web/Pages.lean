@@ -192,11 +192,11 @@ def settingsAction (env : Env) : Handler := action env fun me signals => do
 def articleBody (signals : Json) : Json :=
   .obj #[("article", (signals.get? [.field "article"]).getD (.obj #[]))]
 
-/-- The editor's tag pills, for the `article.tagList` the browser holds, normalised as the API
-will normalise them. -/
+/-- The editor's tag pills, for the `article.tagList` the browser holds, normalized as the API
+will normalize them. -/
 def tagPillsAction : Handler := guestAction fun signals => do
   let tags := match signals.get? [.field "article", .field "tagList"] with
-    | some (.arr items) => normaliseTags (items.filterMap fun | .str s => some s | _ => none)
+    | some (.arr items) => normalizeTags (items.filterMap fun | .str s => some s | _ => none)
     | _ => #[]
   respond [patch (Views.tagPills tags)]
 
