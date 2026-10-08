@@ -16,9 +16,16 @@ export LD_LIBRARY_PATH="$PWD/.lake/packages/libcrypto/.lake/build/lib${LD_LIBRAR
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null' EXIT
 
-for _ in $(seq 50); do
-  curl -sf "http://localhost:$PORT/api/tags" >/dev/null && break
+# Startup takes a second or two, and longer on the first run of a new build.
+ready=false
+for _ in $(seq 600); do
+  if curl -sf "http://localhost:$PORT/api/tags" >/dev/null; then ready=true; break; fi
+  kill -0 "$SERVER" 2>/dev/null || break
   sleep 0.1
 done
+if ! $ready; then
+  echo "with-server.sh: the server did not answer on port $PORT" >&2
+  exit 1
+fi
 
 "$@"
