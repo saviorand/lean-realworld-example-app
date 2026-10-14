@@ -1,8 +1,9 @@
 # Lean RealWorld example app
 
-This is a [RealWorld](https://github.com/realworld-apps/realworld) implementation written in Lean 4 on both ends, the backend and the frontend. RealWorld is the Medium-style blogging app (users, profiles, articles, comments, tags, favorites, follows) that has been implemented in over a hundred stacks.
+This is a [RealWorld](https://github.com/realworld-apps/realworld) implementation written in Lean 4 on both ends, the backend and the frontend. 
 
-The JSON API under `/api` passes the official Hurl suite, 154 requests in 13 files. Everything else is the site, the Conduit frontend rendered on the server with typed HTML. Forms, favorites, follows and comments update in place over server-sent events through [Datastar](https://data-star.dev), and there is no frontend build step. The site calls the same service layer as the API, so every rule is written once, and it passes all 74 tests that the official Playwright suite runs against an app that owns both ends.
+See the full write-up and how it works: 
+https://leangineer.com/blog/realworld-in-lean
 
 ## Stack
 
